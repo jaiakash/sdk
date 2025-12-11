@@ -1,0 +1,36 @@
+[changelog]
+header = """
+# Changelog
+"""
+
+body = """
+{% if version %}## [{{ version }}] - {{ timestamp | date(format="%Y-%m-%d") }}{% endif %}
+{% if commits | length > 0 %}
+{% for group, commits in commits | group_by(attribute="group") %}
+### {{ group | upper_first }}
+{% for commit in commits | reverse %}
+- {{ commit.message | split(pat="\\n") | first }} ({{ commit.remote.username }})
+{% endfor %}
+{% endfor %}
+{% endif %}
+
+{%- if github.contributors | filter(attribute="is_first_time", value=true) | length != 0 %}
+    ### New Contributors
+{%- endif -%}
+
+{% for contributor in github.contributors | filter(attribute="is_first_time", value=true) %}
+  * @{{ contributor.username }} made their first contribution
+    {%- if contributor.pr_number %} in \
+      [#{{ contributor.pr_number }}]({{ self::remote_url() }}/pull/{{ contributor.pr_number }}) \
+    {%- endif %}
+{%- endfor %}\n
+
+{%- if github.contributors | filter(attribute="is_first_time", value=true) | length != 0 %}{% raw %}\n{% endraw -%}{% endif %}
+"""
+
+footer = """
+"""
+
+[git]
+conventional_commits = true
+filter_unconventional = false

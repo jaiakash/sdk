@@ -65,11 +65,13 @@ uv-venv:  ## Create uv virtual environment
 
 .PHONY: release
 release: install-dev
-	@if [ -z "$(VERSION)" ]; then echo "Usage: make release VERSION=0.1.0"; exit 1; fi
-	@V_NO_V=$(VERSION); \
+	@if [ -z "$(RELEASE_VERSION)" ]; then echo "Usage: make release PREV_VERSION=0.1 RELEASE_VERSION=0.2"; exit 1; fi
+	@if [ -z "$(PREV_VERSION)" ]; then echo "Usage: make release PREV_VERSION=0.1 RELEASE_VERSION=0.2"; exit 1; fi
+	@V_NO_V=$(RELEASE_VERSION); \
 	sed -i.bak "s/^__version__ = \".*\"/__version__ = \"$$V_NO_V\"/" kubeflow/__init__.py && \
 	rm -f kubeflow/__init__.py.bak
-	@uv run python scripts/gen-changelog.py --token=$${GITHUB_TOKEN} --version=$(VERSION)
+	@MAJOR_MINOR=$$(echo "$(RELEASE_VERSION)" | cut -d. -f1,2); \
+	uv run git-cliff v$(PREV_VERSION)..HEAD -o CHANGELOG/CHANGELOG-$$MAJOR_MINOR.md
 
  # make test-python will produce html coverage by default. Run with `make test-python report=xml` to produce xml report.
 .PHONY: test-python

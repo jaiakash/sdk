@@ -65,8 +65,8 @@ uv-venv:  ## Create uv virtual environment
 
 .PHONY: release
 release: install-dev
-	@if [ -z "$(VERSION)" ]; then \
-		echo "Usage: make release VERSION=0.1.0 or VERSION=0.3"; \
+	@if ! echo "$(VERSION)" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$$' > /dev/null; then \
+		echo "Error: VERSION must be a full semantic version (e.g. 0.3.0, 0.3.1). Got: $(VERSION)"; \
 		exit 1; \
 	fi
 	@sed -i.bak "s/^__version__ = \".*\"/__version__ = \"$(VERSION)\"/" kubeflow/__init__.py && \

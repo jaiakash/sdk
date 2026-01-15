@@ -13,7 +13,7 @@ def run(cmd: str) -> str:
 def get_prev_version(version: str) -> str:
     major, minor = version.split(".")[:2]
     tags = run(
-        "git tag --sort=version:refname | grep -E '^[0-9]+\\.[0-9]+\\.[0-9]+$' || true"
+        "git tag --sort=version:refname | grep -E '^[0-9]+\\.[0-9]+\\.[0-9]+$' "
     ).splitlines()
 
     prev = None
@@ -26,23 +26,12 @@ def get_prev_version(version: str) -> str:
 
 
 def get_range_end(version: str) -> str:
-    parts = version.split(".")
-
-    # VERSION=0.3.1 → exact tag
-    if len(parts) == 3:
-        try:
-            run(f"git rev-parse {version}")
-        except subprocess.CalledProcessError:
-            print(f"Error: tag {version} does not exist", file=sys.stderr)
-            sys.exit(1)
-        return version
-
-    # VERSION=0.3 → latest 0.3.x
-    tags = run(
-        f"git tag --sort=version:refname | grep -E '^{re.escape(version)}\\.[0-9]+$' || true"
-    ).splitlines()
-
-    return tags[-1] if tags else "HEAD"
+    try:
+        run(f"git rev-parse {version}")
+    except subprocess.CalledProcessError:
+        print(f"Error: tag {version} does not exist", file=sys.stderr)
+        sys.exit(1)
+    return version
 
 
 def main():
@@ -51,6 +40,12 @@ def main():
     args = parser.parse_args()
 
     version = args.version
+    if not re.match(r"^[0-9]+\.[0-9]+\.[0-9]+$", version):
+        print(
+            f"Error: Version {version} is not a full semantic version (X.Y.Z)",
+            file=sys.stderr,
+        )
+        sys.exit(1)
     prev = get_prev_version(version)
     end = get_range_end(version)
 

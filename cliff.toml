@@ -18,19 +18,15 @@ body = """
 
 ### {{ group | replace(from="feat", to="🚀 Features")
           | replace(from="fix", to="🐛 Bug Fixes")
-          | replace(from="docs", to="📚 Documentation")
-          | replace(from="chore", to="🧹 Chores")
-          | replace(from="refactor", to="♻️ Refactoring")
-          | replace(from="test", to="🧪 Tests")
-          | replace(from="ci", to="⚙️ CI")
-          | replace(from="perf", to="⚡ Performance")
+          | replace(from="revert", to="⏪ Reverts")
+          | replace(from="chore", to="🔧 Chores")
           | upper_first }}
 
 {%- for commit in commits | reverse %}
-- {{ commit.message | split(pat="\\n") | first | trim }}
-  {%- if commit.remote and commit.remote.username %} (@{{ commit.remote.username }})
-  {%- else %} ({{ commit.author.name }})
-  {%- endif %}
+- {{ commit.message | split(pat="\n") | first | trim }}
+   {%- if commit.remote and commit.remote.username %} (@{{ commit.remote.username }})
+   {%- else %} ({{ commit.author.name }})
+   {%- endif %}
 {%- endfor %}
 
 {%- endif %}
@@ -54,7 +50,7 @@ footer = "adsasd"
 
 
 [git]
-conventional_commits = true
+conventional_commits = false
 filter_unconventional = false
 split_commits = false
 

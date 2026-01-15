@@ -1,36 +1,56 @@
 [changelog]
-header = """# Changelog
+header = """
+# Changelog
 """
 
 body = """
-{%- if version -%}
-# [{{ version | trim_start_matches(pat="v") }}] ({{ timestamp | date(format="%Y-%m-%d") }})
-{%- else -%}
-# [Unreleased]
+
+{%- if version %}
+## [{{ version | trim_start_matches(pat="v") }}] ({{ timestamp | date(format="%Y-%m-%d") }})
+{%- else %}
+## [Unreleased]
 {%- endif %}
 
-{%- for group, commits in commits | group_by(attribute="group") %}
-### {{ group | upper_first }}
+{%- set groups = commits | group_by(attribute="group") -%}
+
+{%- for group, commits in groups %}
+{%- if commits | length > 0 %}
+
+### {{ group | replace(from="feat", to="🚀 Features")
+          | replace(from="fix", to="🐛 Bug Fixes")
+          | replace(from="docs", to="📚 Documentation")
+          | replace(from="chore", to="🧹 Chores")
+          | replace(from="refactor", to="♻️ Refactoring")
+          | replace(from="test", to="🧪 Tests")
+          | replace(from="ci", to="⚙️ CI")
+          | replace(from="perf", to="⚡ Performance")
+          | upper_first }}
+
 {%- for commit in commits | reverse %}
-- {{ commit.message | split(pat="\\n") | first }}
-  {%- if commit.remote and commit.remote.username -%}
-  (@{{ commit.remote.username }})
-  {%- else -%}
-  ({{ commit.author.name }})
+- {{ commit.message | split(pat="\\n") | first | trim }}
+  {%- if commit.remote and commit.remote.username %} (@{{ commit.remote.username }})
+  {%- else %} ({{ commit.author.name }})
   {%- endif %}
 {%- endfor %}
+
+{%- endif %}
 {%- endfor %}
 
-{%- if github.contributors | filter(attribute="is_first_time", value=true) | length > 0 %}
-### New Contributors
-{%- for contributor in github.contributors | filter(attribute="is_first_time", value=true) %}
-- Congrats @{{ contributor.username }} for their first contribution
+{%- set first_timers = github.contributors
+    | filter(attribute="is_first_time", value=true)
+    | unique(attribute="username") -%}
+
+{%- if first_timers | length > 0 %}
+
+### 🎉 New Contributors
+{%- for contributor in first_timers %}
+- @{{ contributor.username }} — welcome and thanks for your first contribution!
 {%- endfor %}
 {%- endif %}
 
 """
 
-footer = ""
+footer = "adsasd"
 
 
 [git]
@@ -38,5 +58,6 @@ conventional_commits = true
 filter_unconventional = false
 split_commits = false
 
+# Only stable release tags
 tag_pattern = "^[0-9]+\\.[0-9]+\\.[0-9]+$"
 ignore_tags = ".*-(alpha|beta|rc).*"

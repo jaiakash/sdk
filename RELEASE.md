@@ -62,6 +62,7 @@ The Kubeflow SDK uses an automated release process with GitHub Actions:
    ```sh
    export GITHUB_TOKEN=<your_github_token>
    make release VERSION=0.3
+   # or make release VERSION=0.3.1
    ```
 
 This updates:

@@ -93,6 +93,21 @@ release: install-dev
 		-o CHANGELOG/CHANGELOG-$$MAJOR_MINOR.md; \
 	echo "Changelog generated at CHANGELOG/CHANGELOG-$$MAJOR_MINOR.md"
 
+.PHONY: changelog-output
+changelog-output: install-dev
+	@if [ -z "$(VERSION)" ]; then \
+		echo "Error: VERSION is not set. Usage: make changelog-output VERSION=0.3"; exit 1; \
+	fi
+	@PREV_TAG=$$(git tag --sort=version:refname \
+		| grep -E '^[0-9]+\.[0-9]+\.[0-9]+$$' \
+		| awk -v rel="$(VERSION)" -F'.' \
+		  '($$1"."$$2 < rel) {print $$0}' \
+		| tail -n 1); \
+	if [ -z "$$PREV_TAG" ]; then PREV_TAG="0.1.0"; fi; \
+	LAST_TAG=$$(git tag --sort=version:refname | grep -E "^$(VERSION)\.[0-9]+$$" | tail -n 1); \
+	if [ -z "$$LAST_TAG" ]; then RANGE_END="HEAD"; else RANGE_END=$$LAST_TAG; fi; \
+	uv run git-cliff $$PREV_TAG..$$RANGE_END --strip header
+
  # make test-python will produce html coverage by default. Run with `make test-python report=xml` to produce xml report.
 .PHONY: test-python
 test-python: uv-venv  ## Run Python unit tests

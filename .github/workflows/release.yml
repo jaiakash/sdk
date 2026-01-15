@@ -179,10 +179,23 @@ jobs:
         id: changelog
         run: |
           VERSION="${{ needs.prepare.outputs.version }}"
-          CHANGELOG_BODY=$(make changelog-output VERSION="$VERSION")
+          MAJOR_MINOR=$(echo "$VERSION" | cut -d. -f1,2)
+          CHANGELOG_FILE="CHANGELOG/CHANGELOG-${MAJOR_MINOR}.md"
+          set -euo pipefail
+          [[ -f "$CHANGELOG_FILE" ]] || { echo "ERROR: $CHANGELOG_FILE not found" >&2; exit 1; }
+          HEADER_REGEX="^# \\[${VERSION//./\\.}\\]"
+          SECTION=$(sed -n "/$HEADER_REGEX/,\$p" "$CHANGELOG_FILE" | tail -n +2)
+          [[ -n "$SECTION" ]] || { echo "ERROR: No changelog section for $VERSION in $CHANGELOG_FILE" >&2; exit 1; }
+          NEXT_VERSION=$(echo "$SECTION" | grep -m1 "^# \\[[0-9]" || true)
+          if [[ -n "$NEXT_VERSION" ]]; then
+            CHANGELOG=$(echo "$SECTION" | sed -n "1,/^# \\[[0-9]/p" | sed '1d;$d')
+          else
+            CHANGELOG=$(echo "$SECTION" | sed '1d')
+          fi
+          [[ -n "$CHANGELOG" ]] || { echo "ERROR: Empty changelog body for $VERSION in $CHANGELOG_FILE" >&2; exit 1; }
           {
             echo "changelog<<EOF"
-            echo "$CHANGELOG_BODY"
+            echo "$CHANGELOG"
             echo "EOF"
           } >> $GITHUB_OUTPUT
       - name: Create GitHub Release

@@ -66,47 +66,13 @@ uv-venv:  ## Create uv virtual environment
 .PHONY: release
 release: install-dev
 	@if [ -z "$(VERSION)" ]; then \
-		echo "Error: VERSION is not set. Usage: make release VERSION=0.3"; exit 1; \
+		echo "Usage: make release VERSION=0.1.0 or VERSION=0.3"; \
+		exit 1; \
 	fi
-	@set -e; \
-	PREV_TAG=$$(git tag --sort=version:refname \
-		| grep -E '^[0-9]+\.[0-9]+\.[0-9]+$$' \
-		| awk -v rel="$(VERSION)" -F'.' \
-		  '($$1"."$$2 < rel) {print $$0}' \
-		| tail -n 1); \
-	if [ -z "$$PREV_TAG" ]; then \
-		PREV_TAG="0.1.0"; \
-	fi; \
-	PREV_VERSION=$${PREV_TAG}; \
-	echo "Auto-detected previous version: $$PREV_VERSION"; \
-	sed -i.bak "s/^__version__ = \".*\"/__version__ = \"$(VERSION)\"/" kubeflow/__init__.py; \
-	rm -f kubeflow/__init__.py.bak; \
-	LAST_TAG=$$(git tag --sort=version:refname | grep -E "^$(VERSION)\.[0-9]+$$" | tail -n 1); \
-	if [ -z "$$LAST_TAG" ]; then \
-		RANGE_END="HEAD"; \
-	else \
-		RANGE_END=$$LAST_TAG; \
-	fi; \
-	MAJOR_MINOR=$$(echo "$(VERSION)" | cut -d. -f1,2); \
-	echo "Generating changelog for range: $$PREV_VERSION..$$RANGE_END"; \
-	uv run git-cliff $$PREV_VERSION..$$RANGE_END \
-		-o CHANGELOG/CHANGELOG-$$MAJOR_MINOR.md; \
-	echo "Changelog generated at CHANGELOG/CHANGELOG-$$MAJOR_MINOR.md"
+	@sed -i.bak "s/^__version__ = \".*\"/__version__ = \"$(VERSION)\"/" kubeflow/__init__.py && \
+	rm -f kubeflow/__init__.py.bak
+	@uv run python scripts/gen_changelog.py --version "$(VERSION)"
 
-.PHONY: changelog-output
-changelog-output: install-dev
-	@if [ -z "$(VERSION)" ]; then \
-		echo "Error: VERSION is not set. Usage: make changelog-output VERSION=0.3"; exit 1; \
-	fi
-	@PREV_TAG=$$(git tag --sort=version:refname \
-		| grep -E '^[0-9]+\.[0-9]+\.[0-9]+$$' \
-		| awk -v rel="$(VERSION)" -F'.' \
-		  '($$1"."$$2 < rel) {print $$0}' \
-		| tail -n 1); \
-	if [ -z "$$PREV_TAG" ]; then PREV_TAG="0.1.0"; fi; \
-	LAST_TAG=$$(git tag --sort=version:refname | grep -E "^$(VERSION)\.[0-9]+$$" | tail -n 1); \
-	if [ -z "$$LAST_TAG" ]; then RANGE_END="HEAD"; else RANGE_END=$$LAST_TAG; fi; \
-	uv run git-cliff $$PREV_TAG..$$RANGE_END --strip header
 
  # make test-python will produce html coverage by default. Run with `make test-python report=xml` to produce xml report.
 .PHONY: test-python

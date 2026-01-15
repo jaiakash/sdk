@@ -71,7 +71,7 @@ release: install-dev
 	fi
 	@sed -i.bak "s/^__version__ = \".*\"/__version__ = \"$(VERSION)\"/" kubeflow/__init__.py && \
 	rm -f kubeflow/__init__.py.bak
-	@uv run python scripts/gen_changelog.py --version "$(VERSION)"
+	@uv run python scripts/gen-changelog.py --version "$(VERSION)"
 
 
  # make test-python will produce html coverage by default. Run with `make test-python report=xml` to produce xml report.

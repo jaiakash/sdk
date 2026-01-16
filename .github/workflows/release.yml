@@ -16,7 +16,7 @@ permissions:
 jobs:
   prepare:
     name: Prepare release branch
-    if: ${{ github.repository == 'kubeflow/sdk' && !(github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release-') && github.actor == 'github-actions[bot]') }}
+    if: ${{ github.repository == 'jaiakash/sdk' && !(github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release-') && github.actor == 'github-actions[bot]') }}
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.vars.outputs.version }}
@@ -145,7 +145,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: release
-      url: https://pypi.org/project/kubeflow/
+      url: https://pypi.org/project/kubeflow-sdk-akash/
     steps:
       - name: Download build artifacts
         uses: actions/download-artifact@v7
@@ -156,6 +156,7 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           verbose: true
+          skip-existing: true
 
   github-release:
     name: Create GitHub Release
@@ -163,7 +164,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: release
-      url: https://github.com/kubeflow/sdk/releases
+      url: https://github.com/jaiakash/sdk/releases
     steps:
       - uses: actions/checkout@v6
         with:

@@ -73,7 +73,6 @@ release: install-dev
 	rm -f kubeflow/__init__.py.bak
 	@uv run python scripts/gen-changelog.py --version "$(VERSION)"
 
-
  # make test-python will produce html coverage by default. Run with `make test-python report=xml` to produce xml report.
 .PHONY: test-python
 test-python: uv-venv  ## Run Python unit tests

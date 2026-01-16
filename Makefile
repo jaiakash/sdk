@@ -81,7 +81,6 @@ release: install-dev
 	fi; \
 	echo "Changelog generated at $$CHANGELOG_PATH"
 
-
  # make test-python will produce html coverage by default. Run with `make test-python report=xml` to produce xml report.
 .PHONY: test-python
 test-python: uv-venv  ## Run Python unit tests

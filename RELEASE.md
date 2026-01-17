@@ -55,13 +55,13 @@ The Kubeflow SDK uses an automated release process with GitHub Actions:
 
 ### Step-by-Step Release Process
 
-#### 1. Generate Changelog Locally
+#### 1. Update Version and Changelog
 
-1. Generate changelog locally:
+1. Generate version and changelog locally (this will sync dependencies automatically):
 
    ```sh
    export GITHUB_TOKEN=<your_github_token>
-   make release VERSION=<full version>
+   make release VERSION=<X.Y.Z>
    # e.g. make release VERSION=0.3.1
    ```
 

@@ -65,13 +65,21 @@ uv-venv:  ## Create uv virtual environment
 
 .PHONY: release
 release: install-dev
-	@if ! echo "$(VERSION)" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$$' > /dev/null; then \
-		echo "Error: VERSION must be a full semantic version (e.g. 0.3.0, 0.3.1). Got: $(VERSION)"; \
+	@if [ -z "$(VERSION)" ] || ! echo "$(VERSION)" | grep -E -q '^[0-9]+\.[0-9]+\.[0-9]+$$'; then \
+		echo "Error: VERSION must be set in X.Y.Z format. Usage: make release VERSION=X.Y.Z"; \
 		exit 1; \
 	fi
-	@sed -i.bak "s/^__version__ = \".*\"/__version__ = \"$(VERSION)\"/" kubeflow/__init__.py && \
-	rm -f kubeflow/__init__.py.bak
-	@uv run python scripts/gen-changelog.py --version "$(VERSION)"
+	@sed -i 's/^__version__ = ".*"/__version__ = "$(VERSION)"/' kubeflow/__init__.py
+	@MAJOR_MINOR=$$(echo "$(VERSION)" | cut -d. -f1,2); \
+	CHANGELOG_PATH="CHANGELOG/CHANGELOG-$$MAJOR_MINOR.md"; \
+	echo "Generating changelog for $(VERSION) (unreleased)"; \
+	CLIFF_CMD="uv run git-cliff --unreleased --tag $(VERSION)"; \
+	if [ -f "$$CHANGELOG_PATH" ]; then \
+		$$CLIFF_CMD --prepend "$$CHANGELOG_PATH"; \
+	else \
+		$$CLIFF_CMD -o "$$CHANGELOG_PATH"; \
+	fi; \
+	echo "Changelog generated at $$CHANGELOG_PATH"
 
 
  # make test-python will produce html coverage by default. Run with `make test-python report=xml` to produce xml report.

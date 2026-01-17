@@ -1,37 +1,11 @@
 #!/usr/bin/env python3
 
 import argparse
+from datetime import date
+import os
 import re
 import subprocess
 import sys
-
-
-def run(cmd: str) -> str:
-    return subprocess.check_output(cmd, shell=True, text=True).strip()
-
-
-def get_prev_version(version: str) -> str:
-    major, minor = version.split(".")[:2]
-    tags = run(
-        "git tag --sort=version:refname | grep -E '^[0-9]+\\.[0-9]+\\.[0-9]+$' "
-    ).splitlines()
-
-    prev = None
-    for tag in tags:
-        t_major, t_minor, _ = tag.split(".")
-        if (t_major, t_minor) < (major, minor):
-            prev = tag
-
-    return prev or "0.1.0"
-
-
-def get_range_end(version: str) -> str:
-    try:
-        run(f"git rev-parse {version}")
-    except subprocess.CalledProcessError:
-        print(f"Error: tag {version} does not exist", file=sys.stderr)
-        sys.exit(1)
-    return version
 
 
 def main():
@@ -46,27 +20,43 @@ def main():
             file=sys.stderr,
         )
         sys.exit(1)
-    prev = get_prev_version(version)
-    end = get_range_end(version)
 
     major_minor = ".".join(version.split(".")[:2])
+    changelog_path = f"CHANGELOG/CHANGELOG-{major_minor}.md"
 
-    print(f"Previous version : {prev}")
-    print(f"Range end        : {end}")
-    print(f"Generating changelog for {prev}..{end}")
+    print(f"Generating changelog for {version} (unreleased)")
 
-    subprocess.check_call(
-        [
-            "uv",
-            "run",
-            "git-cliff",
-            f"{prev}..{end}",
-            "-o",
-            f"CHANGELOG/CHANGELOG-{major_minor}.md",
-        ]
+    cmd = [
+        "uv",
+        "run",
+        "git-cliff",
+        "--unreleased",
+    ]
+
+    # If the changelog file already exists, prepend it to the generated changelog
+    # This is useful for patch releases, eg 0.3.1 if we have already released 0.3.0
+    if os.path.exists(changelog_path):
+        cmd.extend(["--prepend", changelog_path])
+    else:
+        cmd.extend(["-o", changelog_path])
+
+    subprocess.check_call(cmd)
+
+    # Post-process the changelog to replace "## [Unreleased]" with the actual version
+    # Can be removed once https://github.com/orhun/git-cliff/issues/1347 is solved
+    with open(changelog_path) as f:
+        content = f.read()
+
+    today = date.today().isoformat()
+    version_header = (
+        f"## [{version}](https://github.com/kubeflow/sdk/releases/tag/{version}) ({today})"
     )
+    content = content.replace("## [Unreleased]", version_header)
 
-    print(f"Changelog generated at CHANGELOG/CHANGELOG-{major_minor}.md")
+    with open(changelog_path, "w") as f:
+        f.write(content)
+
+    print(f"Changelog generated at {changelog_path}")
 
 
 if __name__ == "__main__":

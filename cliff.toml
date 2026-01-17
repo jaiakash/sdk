@@ -1,12 +1,15 @@
+[remote.github]
+owner = "kubeflow"
+repo = "sdk"
+
 [changelog]
 header = """
 # Changelog
 """
 
 body = """
-
 {%- if version %}
-## [{{ version }}] ({{ timestamp | date(format="%Y-%m-%d") }})
+## [{{ version }}](https://github.com/kubeflow/sdk/releases/tag/{{ version }}) ({{ timestamp | date(format="%Y-%m-%d") }})
 {%- else %}
 ## [Unreleased]
 {%- endif %}
@@ -15,8 +18,7 @@ body = """
 
 {%- for group, commits in groups %}
 {%- if commits | length > 0 %}
-
-### {{ group | replace(from="feat", to="🚀 Features")
+### {{ group | split(pat="-->") | last | trim | replace(from="feat", to="🚀 Features")
           | replace(from="fix", to="🐛 Bug Fixes")
           | replace(from="revert", to="⏪ Reverts")
           | replace(from="chore", to="🔧 Chores")
@@ -29,7 +31,7 @@ body = """
    {% if parts | length > 1 and parts | last | trim | split(pat=")") | length > 1 -%}
       {%- set pr_part = parts | last | trim -%}
       {%- set pr_number = pr_part | replace(from=")", to="") -%}
-      - {{ parts | slice(end=-1) | join(sep=" (#") }} (#{{ pr_number }} by @{{ commit.remote.username }})
+      - {{ parts | slice(end=-1) | join(sep=" (#") }} ([#{{ pr_number }}](https://github.com/kubeflow/sdk/pull/{{ pr_number }}) by @{{ commit.remote.username }})
    {% else -%}
       - {{ message }} (@{{ commit.remote.username }})
    {% endif -%}
@@ -41,22 +43,24 @@ body = """
 {%- endif %}
 {%- endfor %}
 
-{%- set first_timers = github.contributors
-    | filter(attribute="is_first_time", value=true)
-    | unique(attribute="username") -%}
-
-{%- if first_timers | length > 0 %}
-
-### 🎉 New Contributors
-{%- for contributor in first_timers %}
-- @{{ contributor.username }} — welcome and thanks for your first contribution!
+{%- if github -%}
+{%- set new_contributors = github.contributors | filter(attribute="is_first_time", value=true) -%}
+{%- if new_contributors | length != 0 %}
+{% raw %}\n{% endraw -%}
+### New Contributors
+{%- for contributor in new_contributors %}
+* @{{ contributor.username }} made their first contribution in \
+  [#{{ contributor.pr_number }}](https://github.com/kubeflow/sdk/pull/{{ contributor.pr_number }})
 {%- endfor %}
 {%- endif %}
+{%- endif -%}
 
+{% raw %}\n{% endraw %}
 """
 
-footer = "adsasd"
+trim = true
 
+footer = ""
 
 [git]
 conventional_commits = false

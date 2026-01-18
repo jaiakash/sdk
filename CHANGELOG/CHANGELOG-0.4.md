@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.4.1](https://github.com/kubeflow/sdk/releases/tag/0.4.1) (2026-01-18)
+### 🐛 Bug Fixes
+
+- fix: release (Akash Jaiswal)
+
+### 💼 Other
+
+- fork: release (Akash Jaiswal)
+
+### ⚙️ Miscellaneous Tasks
+
+- chore: adding new v0.4.0 for pypi upload (Akash Jaiswal)
+- chore: rm script and commands in makefile itself (Akash Jaiswal)
+
+
 ## [0.4.0](https://github.com/kubeflow/sdk/releases/tag/0.4.0) (2026-01-17)
 ### 🚀 Features
 

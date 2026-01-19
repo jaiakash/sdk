@@ -21,6 +21,16 @@ SHELL = /usr/bin/env bash -o pipefail
 PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
 VENV_DIR := $(PROJECT_DIR)/.venv
 
+# Setting SED for compatibility with macos
+ifeq ($(shell command -v gsed 2>/dev/null),)
+    SED ?= $(shell command -v sed)
+else
+    SED ?= $(shell command -v gsed)
+endif
+ifeq ($(shell ${SED} --version 2>&1 | grep -q GNU; echo $$?),1)
+    $(error !!! GNU sed is required. If on OS X, use 'brew install gnu-sed'.)
+endif
+
 ##@ General
 
 # The help target prints out all targets with their descriptions organized
@@ -69,7 +79,7 @@ release: install-dev
 		echo "Error: VERSION must be set in X.Y.Z format. Usage: make release VERSION=X.Y.Z"; \
 		exit 1; \
 	fi
-	@sed -i 's/^__version__ = ".*"/__version__ = "$(VERSION)"/' kubeflow/__init__.py
+	@$(SED) -i 's/^__version__ = ".*"/__version__ = "$(VERSION)"/' kubeflow/__init__.py
 	@MAJOR_MINOR=$$(echo "$(VERSION)" | cut -d. -f1,2); \
 	CHANGELOG_PATH="CHANGELOG/CHANGELOG-$$MAJOR_MINOR.md"; \
 	echo "Generating changelog for $(VERSION) (unreleased)"; \

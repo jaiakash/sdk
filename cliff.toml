@@ -64,7 +64,7 @@ footer = ""
 
 [git]
 conventional_commits = false
-filter_unconventional = false
+filter_unconventional = true
 split_commits = false
 
 # Only stable release tags

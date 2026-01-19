@@ -63,7 +63,7 @@ trim = true
 footer = ""
 
 [git]
-conventional_commits = false
+conventional_commits = true
 filter_unconventional = true
 split_commits = false
 

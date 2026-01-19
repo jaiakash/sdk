@@ -14,7 +14,7 @@ body = """
 ## [Unreleased]
 {%- endif %}
 
-{%- set group_order = ["🚀 Features", "🐛 Bug Fixes", "⚙️ Miscellaneous Tasks"] -%}
+{%- set group_order = ["🚀 Features", "🐛 Bug Fixes", "⚙️ Miscellaneous Tasks", "⏪ Reverts"] -%}
 
 {%- for group_name in group_order %}
 {%- set group_commits = commits | filter(attribute="group", value=group_name) -%}
@@ -69,6 +69,6 @@ commit_parsers = [
     { message = "^feat(\\(.*\\))?:", group = "🚀 Features" },
     { message = "^fix(\\(.*\\))?:", group = "🐛 Bug Fixes" },
     { message = "^chore(\\(.*\\))?:", group = "⚙️ Miscellaneous Tasks" },
-    { message = "^revert(\\(.*\\))?:", group = "⚙️ Miscellaneous Tasks" },
+    { message = "^revert(\\(.*\\))?:", group = "⏪ Reverts" },
     { message = ".*", skip = true },
 ]
